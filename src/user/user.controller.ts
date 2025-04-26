@@ -1,10 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, ParseIntPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, ParseIntPipe, ValidationPipe } from '@nestjs/common';
 import { UserService } from './user.service';
+import { createUser } from './dto/createDto';
+import { updateUser } from './dto/updateDto';
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
   @Get()
-  findAll(@Query('role') role?: 'INTERN' | 'ENGINEER' | 'MANAGER') {
+  findAll(@Query('role', ValidationPipe) role?: 'INTERN' | 'ENGINEER' | 'MANAGER') {
     return this.userService.findAll(role);
   }
 
@@ -14,16 +16,12 @@ export class UserController {
   }
 
   @Post()
-  create(@Body() body: {
-    name: string;
-    email: string;
-    role: string;
-  }): any {
+  create(@Body(ValidationPipe) body: createUser): any {
     return this.userService.create(body);
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id:number, @Body() body:  {email?: string, role?: string}): any {
+  update(@Param('id', ParseIntPipe) id:number, @Body(ValidationPipe) body:  updateUser): any {
     return this.userService.update(body, id);
   }
 

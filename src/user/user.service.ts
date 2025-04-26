@@ -1,17 +1,7 @@
-import { Injectable } from '@nestjs/common';
-
-type user = {
-  id: number;
-  name: string;
-  email?: string;
-  role?: string;
-}
-
-type createUser = {
-  name: string;
-  email: string;
-  role: string;
-}
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { user } from './dto/findDto';
+import { createUser } from './dto/createDto';
+import { updateUser } from './dto/updateDto';
 
 @Injectable()
 export class UserService {
@@ -38,13 +28,17 @@ export class UserService {
 
   findAll(role?: 'INTERN' | 'ENGINEER' | 'MANAGER'): user[]{
     if(role){
-      return this.users.filter(user => user.role === role);
+      const res = this.users.filter(user => user.role === role);
+      if(res.length === 0) throw new NotFoundException(`User with role ${role} not found`);
+      return res
     }
     return this.users;
   }
 
   findOne(id: number): user | undefined {
-    return this.users.find(user => user.id === id);
+    const res =  this.users.find(user => user.id === id);
+    if(!res) throw new NotFoundException(`User with id ${id} not found`);
+    return res; 
   }
 
   create(user: createUser): user{
@@ -56,7 +50,7 @@ export class UserService {
     return newUser;
   }
 
-  update(updatedUser: {email?: string, role?: string}, id: number): user | undefined {
+  update(updatedUser: updateUser, id: number): user | undefined {
     this.users = this.users.map((user) => {
       if(user.id === id) {
         return {
